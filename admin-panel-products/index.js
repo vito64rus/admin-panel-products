@@ -529,7 +529,7 @@ const products = [
   },
 ];
 
-searchProducts = (products, query) => {
+const searchProducts = (products, query) => {
   const result = [];
 
   function recurse(items) {
@@ -547,7 +547,7 @@ searchProducts = (products, query) => {
   return result;
 }
 
-consoleLog = (query, results) => {
+const consoleLog = (query, results) => {
     console.group(` Результаты поиска: '${query}'`);
     if (results.length === 0) {
         console.log('Товар не найден.');
