@@ -530,35 +530,58 @@ const products = [
 ];
 
 const searchProducts = (products, query) => {
-  const result = [];
+  //   Защита от некорректных запросов:
+  // - пустые строки.
+  // - строки только из пробелов .
+  // - слишком короткие запросы (меньше 2 символов).
+  if (!query || query.trim().length < 2) {
+    return [];
+  }
+
+  const foundProducts = [];
 
   function recurse(items) {
     for (let i = 0; i < items.length; i++) {
-      const { children, name } = items[i];
-      if (children) {
-        recurse(children);
-      } else if (name && name.toLowerCase().includes(query.toLowerCase())) {
-        result.push(items[i]);
+      const item = items[i];
+
+      if (item.children) {
+        recurse(item.children);
+      } else if (item.name) {
+        // Улучшил поиск. Разбивает запрос на слова, и проверяет что КАЖДОЕ слово есть в названии.
+        // Теперь можно находить по частичному совпадению.
+        // Например: 'чехол для iphone' найдет и 'Чехол книжка для iPhone 15'.
+        const search = query
+          .toLowerCase()
+          .split(" ")
+          .filter((word) => word.length > 0);
+        const name = item.name.toLowerCase();
+        const all = search.every((word) => name.includes(word));
+
+        if (all) {
+          foundProducts.push(item);
+        }
       }
     }
   }
 
-  recurse(products); 
-  return result;
-}
+  recurse(products);
+  return foundProducts;
+};
 
 const consoleLog = (query, results) => {
-    console.group(` Результаты поиска: '${query}'`);
-    if (results.length === 0) {
-        console.log('Товар не найден.');
-    } else {
-        results.forEach((product, index) => {
-            console.log(` ${index + 1}. ${product.name || product.title} - $${product.price}`);
-        });
-    }
-    console.groupEnd();
-}
+  console.group(` Результаты поиска: '${query}'`);
+  if (results.length === 0) {
+    console.log("Товар не найден.");
+  } else {
+    results.forEach((product, index) => {
+      console.log(
+        ` ${index + 1}. ${product.name || product.title} - $${product.price}`
+      );
+    });
+  }
+  console.groupEnd();
+};
 
-consoleLog('Samsung', searchProducts(products, 'Samsung'));
-consoleLog('газонокосилка', searchProducts(products, 'газонокосилка'));
-consoleLog('шуруповерт', searchProducts(products, 'шуруповерт'));
+consoleLog("Samsung", searchProducts(products, "Sam"));
+consoleLog("газонокосилка", searchProducts(products, "газонокосилка bosch"));
+consoleLog("чехол", searchProducts(products, "чехол iphone"));
